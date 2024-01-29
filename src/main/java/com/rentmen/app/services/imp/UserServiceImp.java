@@ -17,82 +17,77 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserServiceImp implements UserService {
 
-    @Autowired
-    private UserRepo userRepo;
+	@Autowired
+	private UserRepo userRepo;
 
-    @Autowired
-    private ModelMapper modelMapper;
+	@Autowired
+	private ModelMapper modelMapper;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RoleRepo roleRepo;
+	@Autowired
+	private RoleRepo roleRepo;
 
-    public UserDto createUser(UserDto userDto) {
-        User user = dtoToUser(userDto);
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        User savedUser = userRepo.save(user);
-        return userToDto(savedUser);
-    }
+	public UserDto createUser(UserDto userDto) {
+		User user = dtoToUser(userDto);
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+		User savedUser = userRepo.save(user);
+		return userToDto(savedUser);
+	}
 
-    public UserDto updateUser(UserDto userDto, Long userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
-        user.setName(userDto.getName());
-        user.setEmail(userDto.getEmail());
-        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
-        user.setAbout(userDto.getAbout());
-        User updatedUser = userRepo.save(user);
-        UserDto updatedUserDto = userToDto(updatedUser);
-        return updatedUserDto;
-    }
+	public UserDto updateUser(UserDto userDto, Long userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
+		user.setName(userDto.getName());
+		user.setEmail(userDto.getEmail());
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+		user.setAbout(userDto.getAbout());
+		User updatedUser = userRepo.save(user);
+		UserDto updatedUserDto = userToDto(updatedUser);
+		return updatedUserDto;
+	}
 
-    public UserDto getUserById(Long userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
-        return userToDto(user);
-    }
+	public UserDto getUserById(Long userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
+		return userToDto(user);
+	}
 
-    public List<UserDto> getAllUsers() {
-        List<User> users = userRepo.findAll();
-        List<UserDto> userDtos = users.stream().map(user -> userToDto(user)).collect(Collectors.toList());
-        return userDtos;
-    }
+	public List<UserDto> getAllUsers() {
+		List<User> users = userRepo.findAll();
+		List<UserDto> userDtos = users.stream().map(user -> userToDto(user)).collect(Collectors.toList());
+		return userDtos;
+	}
 
-    public void deleteUser(Long userId) {
-        User user = userRepo.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
-        userRepo.delete(user);
-    }
+	public void deleteUser(Long userId) {
+		User user = userRepo.findById(userId)
+				.orElseThrow(() -> new ResourceNotFoundException("User", "id", userId.intValue()));
+		userRepo.delete(user);
+	}
 
-    public User dtoToUser(UserDto userDto) {
-        User user = modelMapper.map(userDto, User.class);
-        return user;
-    }
+	public User dtoToUser(UserDto userDto) {
+		User user = modelMapper.map(userDto, User.class);
+		return user;
+	}
 
-    public UserDto userToDto(User user) {
-        UserDto userDto = modelMapper.map(user, UserDto.class);
-        return userDto;
-    }
+	public UserDto userToDto(User user) {
+		UserDto userDto = modelMapper.map(user, UserDto.class);
+		return userDto;
+	}
 
-    public UserDto registerNewUser(UserDto userDto) {
-        Role role;
-        User user = modelMapper.map(userDto, User.class);
+	public UserDto registerNewUser(UserDto userDto) {
+		Role role;
+		User user = modelMapper.map(userDto, User.class);
 
-        System.out.println(user.getDepId());
+		user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        System.out.println("PRRINTTIINNG");
+		role = roleRepo.findById(1).get();
+		user.getRoles().add(role);
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+		User newUser = userRepo.save(user);
 
-//        if (userDto.getDepartmentsSet().stream().anyMatch(e -> e.getDepName().equals("ADMIN"))) {
-            role = roleRepo.findById(1).get();
-//        } else {
-//            role = roleRepo.findById(2).get();
-//        }
-        user.getRoles().add(role);
-
-        User newUser = userRepo.save(user);
-
-        return modelMapper.map(newUser, UserDto.class);
-    }
+		return modelMapper.map(newUser, UserDto.class);
+	}
 
 }
